@@ -286,7 +286,7 @@ else:
         token = CheckB(cmd, "token", "getvar", "token")
         if not token:
             token = input("\nFailed to obtain the token!\nMaybe the device is in fastboot mode instead of bootloader mode.\nPlease enter it manually: ")
-    print(f"\n{cg}DeviceInfo:{cres}\nunlocked: {unlocked}\nproduct: {product}\ntoken: {token}\n")
+    print(f"\n\n\n{cg}DeviceInfo:{cres}\nunlocked: {unlocked}\nproduct: {product}\ntoken: {token}\n")
 
 class RetrieveEncryptData:
     def add_nonce(self):
