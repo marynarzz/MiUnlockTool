@@ -265,6 +265,9 @@ def CheckB(cmd, var_name, *fastboot_args):
                 time.sleep(0.1)
                 continue
 
+            sys.stdout.write('\r\033[K')
+            sys.stdout.flush()
+
             while True:
                 result = subprocess.run([cmd] + list(fastboot_args), capture_output=True, text=True)
                 lines = [line.split(f"{var_name}:")[1].strip() for line in result.stderr.split('\n') if f"{var_name}:" in line]
@@ -276,7 +279,7 @@ if '-m' in sys.argv:
     token = input("\nEnter device token: ")
     product = input("\nEnter device product: ")
 else:
-    [print(char, end='', flush=True) or time.sleep(0.01) for char in "\nCheck if device is connected in bootloader mode...\n"]
+    [print(char, end='', flush=True) or time.sleep(0.01) for char in "\nEnsure you're in Bootloader mode\n\n"]
     unlocked = CheckB(cmd, "unlocked", "getvar", "unlocked")
     product = CheckB(cmd, "product", "getvar", "product")
     if not product:
@@ -286,7 +289,7 @@ else:
         token = CheckB(cmd, "token", "getvar", "token")
         if not token:
             token = input("\nFailed to obtain the token!\nMaybe the device is in fastboot mode instead of bootloader mode.\nPlease enter it manually: ")
-    print(f"\n\n\n{cg}DeviceInfo:{cres}\nunlocked: {unlocked}\nproduct: {product}\ntoken: {token}\n")
+    print(f"\n{cg}DeviceInfo:{cres}\nunlocked: {unlocked}\nproduct: {product}\ntoken: {token}\n")
 
 class RetrieveEncryptData:
     def add_nonce(self):
