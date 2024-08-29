@@ -244,44 +244,33 @@ elif region == "europe":
 else:
     url = g
 
-connected = 0
-
-def connect(value):
-    c_no = f"\n{cr}Not connected to the phone !{cres}"
-    c__no = "\n- Turn off the Xiaomi phone\n- hold Volume Down and Power buttons to enter Bootloader\n- connect the phone with a USB cable\n"
-    c_nol = f"\n{cr}The phone is no longer connected !!!{cres}\nplease connect the phone again"
-    c_yes = f"\n{cg}phone connected{cres}"
-    global connected
-    if value == 0 and connected == 0:
-        connected = 2
-        print(c_no)
-        [print(char, end='', flush=True) or time.sleep(0.04) for char in c__no]
-    if value == 0 and connected == 1:
-        connected = 2
-        print(c_nol)
-    if value == 1 and (connected == 0 or connected == 2):
-        connected = 1
-        print(c_yes)
-
 def CheckB(cmd, var_name, *fastboot_args):
-    for arg in sys.argv:
-        if arg.lower().startswith("time"):
-            timeout = int(arg[4:])
-            break
-    else:
-        timeout = 6
+    spinner = "|/-\\"
+    message = "\r device not connected ! "
     while True:
-        try:
-            result = subprocess.run([cmd] + list(fastboot_args), capture_output=True, text=True, timeout=timeout)
-            connect(1)
-        except subprocess.TimeoutExpired:
-            connect(0)
-            continue     
-        lines = [line.split(f"{var_name}:")[1].strip() for line in result.stderr.split('\n') if f"{var_name}:" in line]
-        if len(lines) > 1:
-            cvalue = "".join(lines)
-            return cvalue       
-        return lines[0] if lines else None
+        for char in spinner:
+            process = subprocess.Popen([cmd, 'devices'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            line = process.stdout.readline()
+
+            if not line and process.poll() is not None:
+                sys.stdout.write(message + char + '\r')
+                sys.stdout.flush()
+                time.sleep(0.1)
+                continue
+
+            if "No permission" in line:
+                process.terminate()
+                sys.stdout.write(message + char + '\r')
+                sys.stdout.flush()
+                time.sleep(0.1)
+                continue
+
+            while True:
+                result = subprocess.run([cmd] + list(fastboot_args), capture_output=True, text=True)
+                lines = [line.split(f"{var_name}:")[1].strip() for line in result.stderr.split('\n') if f"{var_name}:" in line]
+                if len(lines) > 1:
+                    return "".join(lines)
+                return lines[0] if lines else None
 
 if '-m' in sys.argv:
     token = input("\nEnter device token: ")
