@@ -111,7 +111,7 @@ So the time was increased from 1s to [6s](https://github.com/offici5l/MiUnlockTo
 - `fix "Invalid link"`
 
 ### Version 1.5.1 (Update):
-- `fix "device is not recognized but termux-api popup appears !"`
+- Fix `"device is not recognized but termux-api popup appears !"`
 - Delete some unimportant messages ..
 
 
