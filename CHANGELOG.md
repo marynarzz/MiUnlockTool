@@ -109,3 +109,10 @@ So the time was increased from 1s to [6s](https://github.com/offici5l/MiUnlockTo
 ### Version 1.5.1 (Update):
 - Simplified browser login canceled currently due to some problems. so Means »
 - `fix "Invalid link"`
+
+### Version 1.5.1 (Update):
+- `fix "device is not recognized but termux-api popup appears !"`
+- Delete some unimportant messages ..
+
+
+
