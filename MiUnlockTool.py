@@ -85,6 +85,9 @@ if s == "Linux" and os.path.exists("/data/data/com.termux"):
     cmd = "fastboot"
     datafile = os.path.expanduser("~/data.json")
     browserp = "t"
+    if not os.path.isdir(os.path.expanduser('~/storage')):
+        print("\nPlease grant permission via command:\ntermux-setup-storage\n\nthen restart the tool\n")
+        exit()
 else:
     dir = os.path.dirname(__file__)
     fp = os.path.join(dir, "platform-tools")
