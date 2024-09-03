@@ -283,9 +283,10 @@ def CheckB(cmd, var_name, *fastboot_args):
                 break
 
     while True:
-        print(f"\nFetching '{var_name}' — please wait...")
+        print(f"\rFetching '{var_name}' — please wait...", end='', flush=True)
         result = subprocess.run([cmd] + list(fastboot_args), capture_output=True, text=True)
         lines = [line.split(f"{var_name}:")[1].strip() for line in result.stderr.split('\n') if f"{var_name}:" in line]
+        print('\r\033[K', end='', flush=True)
         if len(lines) > 1:
             return "".join(lines)
         return lines[0] if lines else None
