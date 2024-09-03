@@ -119,4 +119,8 @@ So the time was increased from 1s to [6s](https://github.com/offici5l/MiUnlockTo
 - Add a step to verify that storage access(termux-setup-storage) is granted
 
 
+### Version 1.5.3:
+- A global variable connect was added to track the device connection status. the code now checks for device connection only if it hasn't been connected yet, reducing redundant checks.
+This will reduce the process time by about half, and it cannot be reduced further because the problem is with termux &termux-api itself.
 
+- Add some messages to let the user know that the process is in progress.
