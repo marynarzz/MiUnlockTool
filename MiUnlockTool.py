@@ -351,7 +351,7 @@ if "code" in r and r["code"] == 0:
     if browserp == "wlm":
         path = "encryptData"
     else:
-        path = "/sdcard/Download/encryptData"
+        path = "/sdcard/encryptData"
     with open(path, "wb") as edfile:
         edfile.write(ed.getvalue())
     if '-m' in sys.argv:
