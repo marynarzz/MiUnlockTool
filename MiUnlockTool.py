@@ -247,36 +247,48 @@ elif region == "europe":
 else:
     url = g
 
+global connect
+connect = False
+
 def CheckB(cmd, var_name, *fastboot_args):
     spinner = "|/-\\"
     message = "\r device not connected ! "
+    global connect
+
+    if not connect:
+        while True:
+            for char in spinner:
+                process = subprocess.Popen([cmd, 'devices'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                line = process.stdout.readline()
+
+                if not line and process.poll() is not None:
+                    sys.stdout.write(message + char + '\r')
+                    sys.stdout.flush()
+                    time.sleep(0.1)
+                    continue
+
+                if "No permission" in line:
+                    process.terminate()
+                    sys.stdout.write(message + char + '\r')
+                    sys.stdout.flush()
+                    time.sleep(0.1)
+                    continue
+
+                sys.stdout.write('\r\033[K')
+                sys.stdout.flush()
+                connect = True
+                break
+
+            if connect:
+                break
+
     while True:
-        for char in spinner:
-            process = subprocess.Popen([cmd, 'devices'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            line = process.stdout.readline()
-
-            if not line and process.poll() is not None:
-                sys.stdout.write(message + char + '\r')
-                sys.stdout.flush()
-                time.sleep(0.1)
-                continue
-
-            if "No permission" in line:
-                process.terminate()
-                sys.stdout.write(message + char + '\r')
-                sys.stdout.flush()
-                time.sleep(0.1)
-                continue
-
-            sys.stdout.write('\r\033[K')
-            sys.stdout.flush()
-
-            while True:
-                result = subprocess.run([cmd] + list(fastboot_args), capture_output=True, text=True)
-                lines = [line.split(f"{var_name}:")[1].strip() for line in result.stderr.split('\n') if f"{var_name}:" in line]
-                if len(lines) > 1:
-                    return "".join(lines)
-                return lines[0] if lines else None
+        print(f"\nFetching '{var_name}' — please wait...")
+        result = subprocess.run([cmd] + list(fastboot_args), capture_output=True, text=True)
+        lines = [line.split(f"{var_name}:")[1].strip() for line in result.stderr.split('\n') if f"{var_name}:" in line]
+        if len(lines) > 1:
+            return "".join(lines)
+        return lines[0] if lines else None
 
 if '-m' in sys.argv:
     token = input("\nEnter device token: ")
