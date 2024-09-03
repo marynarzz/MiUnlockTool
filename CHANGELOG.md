@@ -115,5 +115,8 @@ So the time was increased from 1s to [6s](https://github.com/offici5l/MiUnlockTo
 - Improvements
 - Delete some unimportant messages ..
 
+### Version 1.5.2 (Update):
+- Add a step to verify that storage access(termux-setup-storage) is granted
+
 
 
