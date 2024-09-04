@@ -127,6 +127,13 @@ This will reduce the process time by about half, and it cannot be reduced furthe
 
 
 ### Version 1.5.4:
-
 - Edit the encryptData save path to be in /sdcard/encryptData Instead of being in /sdcard/Download/encryptData ( this will fix the issue :
 FileNotFoundError: [Errno 2] No such file or directory: '/sdcard/Download/encryptData' )
+
+
+### Version 1.5.5:
+- Output management has been enhanced by using threads to read from stdout and stderr concurrently, which reduces verification delays and improves system responsiveness.
+
+- The fastboot devices command has been removed from the verification process, which reduces the number of executed commands and increases process efficiency. (This will minimize waiting time for devices facing issues.)
+
+- Manual input on failure has been removed and some unnecessary elements have been eliminated.
