@@ -21,7 +21,7 @@ for lib in ['Cryptodome', 'urllib3', 'requests', 'colorama']:
             cmd = f'pip install {lib}'
         os.system(cmd)
 
-import re, requests, json, hmac, random, binascii, urllib, hashlib, io, urllib.parse, time, sys, urllib.request, zipfile, webbrowser, platform, subprocess, shutil, stat, datetime
+import re, requests, json, hmac, random, binascii, urllib, hashlib, io, urllib.parse, time, sys, urllib.request, zipfile, webbrowser, platform, subprocess, shutil, stat, datetime, threading
 from urllib3.util.url import Url
 from base64 import b64encode, b64decode
 from Cryptodome.Cipher import AES
@@ -247,46 +247,41 @@ elif region == "europe":
 else:
     url = g
 
-global connect
-connect = False
+def read_stream(stream, output_list, process, restart_flag):
+    try:
+        for line in iter(stream.readline, ''):
+            line = line.strip()
+            output_list.append(line)
+            if "No permission" in line or "< waiting for any device >" in line:
+                process.terminate()
+                print(f'\r< waiting for any device >', end='', flush=True)
+                restart_flag[0] = True
+                return
+    finally:
+        stream.close()
 
 def CheckB(cmd, var_name, *fastboot_args):
-    spinner = "|/-\\"
-    message = "\r device not connected ! "
-    global connect
-
-    if not connect:
-        while True:
-            for char in spinner:
-                process = subprocess.Popen([cmd, 'devices'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                line = process.stdout.readline()
-
-                if not line and process.poll() is not None:
-                    sys.stdout.write(message + char + '\r')
-                    sys.stdout.flush()
-                    time.sleep(0.1)
-                    continue
-
-                if "No permission" in line:
-                    process.terminate()
-                    sys.stdout.write(message + char + '\r')
-                    sys.stdout.flush()
-                    time.sleep(0.1)
-                    continue
-
-                sys.stdout.write('\r\033[K')
-                sys.stdout.flush()
-                connect = True
-                break
-
-            if connect:
-                break
-
     while True:
+        process = subprocess.Popen([cmd] + list(fastboot_args), stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        stdout_lines, stderr_lines, restart_flag = [], [], [False]
+
+        threading.Thread(target=read_stream, args=(process.stdout, stdout_lines, process, restart_flag)).start()
+        threading.Thread(target=read_stream, args=(process.stderr, stderr_lines, process, restart_flag)).start()
+
+        try:
+            process.wait()
+        except subprocess.SubprocessError as e:
+            print(f"Error while executing process: {e}")
+            return None
+
+        if restart_flag[0]:
+            time.sleep(2)
+            sys.stdout.write('\r\033[K')
+            continue
+        
         print(f"\rFetching '{var_name}' — please wait...", end='', flush=True)
-        result = subprocess.run([cmd] + list(fastboot_args), capture_output=True, text=True)
-        lines = [line.split(f"{var_name}:")[1].strip() for line in result.stderr.split('\n') if f"{var_name}:" in line]
-        print('\r\033[K', end='', flush=True)
+
+        lines = [line.split(f"{var_name}:")[1].strip() for line in stderr_lines + stdout_lines if f"{var_name}:" in line]
         if len(lines) > 1:
             return "".join(lines)
         return lines[0] if lines else None
@@ -294,18 +289,19 @@ def CheckB(cmd, var_name, *fastboot_args):
 if '-m' in sys.argv:
     token = input("\nEnter device token: ")
     product = input("\nEnter device product: ")
+    unlocked = "?"
 else:
     [print(char, end='', flush=True) or time.sleep(0.01) for char in "\nEnsure you're in Bootloader mode\n\n"]
     unlocked = CheckB(cmd, "unlocked", "getvar", "unlocked")
     product = CheckB(cmd, "product", "getvar", "product")
-    if not product:
-        product = input("\nFailed to obtain the product!\nMaybe the device is in fastboot mode instead of bootloader mode.\nPlease enter it manually: ")
     token = CheckB(cmd, "token", "oem", "get_token")
     if not token:
         token = CheckB(cmd, "token", "getvar", "token")
-        if not token:
-            token = input("\nFailed to obtain the token!\nMaybe the device is in fastboot mode instead of bootloader mode.\nPlease enter it manually: ")
-    print(f"\n{cg}DeviceInfo:{cres}\nunlocked: {unlocked}\nproduct: {product}\ntoken: {token}\n")
+
+      
+sys.stdout.write('\r\033[K')
+
+print(f"\n{cg}DeviceInfo:{cres}\nunlocked: {unlocked}\nproduct: {product}\ntoken: {token}\n")
 
 class RetrieveEncryptData:
     def add_nonce(self):
