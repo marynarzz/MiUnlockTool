@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/MiUnlockTool-orange" alt="MiUnlockTool" width="200" height="40">
 
-[![Version 1.5.4](https://img.shields.io/badge/Version-1.5.4-brightgreen)](#)
+[![Version 1.5.5](https://img.shields.io/badge/Version-1.5.5-brightgreen)](#)
 
 [CHANGELOG](https://github.com/offici5l/MiUnlockTool/blob/main/CHANGELOG.md)
 
