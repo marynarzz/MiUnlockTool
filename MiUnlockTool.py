@@ -297,17 +297,25 @@ if '-m' in sys.argv:
 else:
     [print(char, end='', flush=True) or time.sleep(0.01) for char in "\nEnsure you're in Bootloader mode\n\n"]
 
-    for var, cmd_args in [('unlocked', ["unlocked", "getvar", "unlocked"]),
-                          ('product', ["product", "getvar", "product"]),
-                          ('token', ["token", "oem", "get_token"]),
-                          ('token', ["token", "getvar", "token"])]:
-        for _ in range(4):
-            value = CheckB(cmd, *cmd_args)
-            if value:
-                if var == 'token':
-                    SoC = "Mediatek" if cmd_args[1] == "oem" else "Qualcomm"
-                globals()[var] = value
-                break
+    for _ in range(4):
+        unlocked = CheckB(cmd, "unlocked", "getvar", "unlocked")
+        if unlocked:
+            break
+
+    for _ in range(4):
+        product = CheckB(cmd, "product", "getvar", "product")
+        if product:
+            break
+
+    for _ in range(4):
+        token = CheckB(cmd, "token", "oem", "get_token")
+        if token:
+            SoC = "Mediatek"
+            break
+        token = CheckB(cmd, "token", "getvar", "token")
+        if token:
+            SoC = "Qualcomm"
+            break
 
 
 sys.stdout.write('\r\033[K')
