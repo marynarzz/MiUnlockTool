@@ -137,3 +137,12 @@ FileNotFoundError: [Errno 2] No such file or directory: '/sdcard/Download/encryp
 - The fastboot devices command has been removed from the verification process, which reduces the number of executed commands and increases process efficiency. (This will minimize waiting time for devices facing issues.)
 
 - Manual input on failure has been removed and some unnecessary elements have been eliminated.
+
+
+### Version 1.5.5 (Update):
+
+- Retry 4 attempts, in case of failure to get phone info
+
+- Add print the type of SoC, based on the order that gets the token.
+
+https://github.com/offici5l/MiUnlockTool/blob/main/MiUnlockTool.py#L289-L323
