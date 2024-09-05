@@ -286,10 +286,10 @@ def CheckB(cmd, var_name, *fastboot_args):
             return "".join(lines)
         return lines[0] if lines else None
 
-product = "?"
-SoC = "?"
-token = "?"
-unlocked = "?"
+product = None
+SoC = None
+token = None
+unlocked = None
 
 if '-m' in sys.argv:
     token = input("\nEnter device token: ")
