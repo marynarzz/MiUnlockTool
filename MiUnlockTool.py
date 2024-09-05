@@ -286,23 +286,34 @@ def CheckB(cmd, var_name, *fastboot_args):
             return "".join(lines)
         return lines[0] if lines else None
 
+product = "?"
+SoC = "?"
+token = "?"
+unlocked = "?"
+
 if '-m' in sys.argv:
     token = input("\nEnter device token: ")
     product = input("\nEnter device product: ")
-    unlocked = "?"
 else:
     [print(char, end='', flush=True) or time.sleep(0.01) for char in "\nEnsure you're in Bootloader mode\n\n"]
-    unlocked = CheckB(cmd, "unlocked", "getvar", "unlocked")
-    product = CheckB(cmd, "product", "getvar", "product")
-    token = CheckB(cmd, "token", "oem", "get_token")
-    if not token:
-        token = CheckB(cmd, "token", "getvar", "token")
 
-      
+    for var, cmd_args in [('unlocked', ["unlocked", "getvar", "unlocked"]),
+                          ('product', ["product", "getvar", "product"]),
+                          ('token', ["token", "oem", "get_token"]),
+                          ('token', ["token", "getvar", "token"])]:
+        for _ in range(4):
+            value = CheckB(cmd, *cmd_args)
+            if value:
+                if var == 'token':
+                    SoC = "Mediatek" if cmd_args[1] == "oem" else "Qualcomm"
+                globals()[var] = value
+                break
+
+
 sys.stdout.write('\r\033[K')
 
-print(f"\n{cg}DeviceInfo:{cres}\nunlocked: {unlocked}\nproduct: {product}\ntoken: {token}\n")
-
+print(f"\n{cg}DeviceInfo:{cres}\nunlocked: {unlocked}\nSoC: {SoC}\nproduct: {product}\ntoken: {token}\n")
+      
 class RetrieveEncryptData:
     def add_nonce(self):
         r = RetrieveEncryptData("/api/v2/nonce", {"r":''.join(random.choices(list("abcdefghijklmnopqrstuvwxyz"), k=16)), "sid":"miui_unlocktool_client"}).run()
