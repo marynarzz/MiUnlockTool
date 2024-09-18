@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Define cache path
+cache_path="/data/data/com.termux/cache/apt/archives/"
+mkdir -p "$cache_path" || { echo "Failed to create cache path: $cache_path"; exit 1; }
+
+# Detect architecture
+arch=$(uname -m)
+if [ "$arch" = "aarch64" ]; then
+    arch_type="termux-aarch64"
+else
+    arch_type="termux-arm"
+fi
+
+# Define base URL for .deb files
+base_url="https://github.com/offici5l/MiUnlockTool/tree/test/$arch_type/"
+
+# Attempt to fetch the page content until successful
+while true; do
+    echo "Fetching page content from $base_url..."
+    page_content=$(curl -s "$base_url")
+    if [ $? -eq 0 ]; then
+        break
+    else
+        echo "Failed to fetch page content. Retrying in 5 seconds..."
+        sleep 5
+    fi
+done
+
+# Extract .deb file names
+file_names=$(echo "$page_content" | grep -oP '(?<=href="/offici5l/MiUnlockTool/blob/test/'$arch_type'/)[^"]*\.deb')
+
+# Download each file
+for file in $file_names; do
+    # Construct download URL
+    file_url="https://raw.githubusercontent.com/offici5l/MiUnlockTool/test/$arch_type/$file"
+    # Define the full path for the downloaded file
+    file_path="${cache_path}${file}"
+    
+    # Check if file already exists
+    if [ -f "$file_path" ]; then
+        echo "$file already exists. Skipping download."
+        continue
+    fi
+
+    # Attempt to download the file until successful
+    while true; do
+        echo "Downloading $file..."
+        curl -L "$file_url" -o "$file_path"
+        if [ $? -eq 0 ]; then
+            break
+        else
+            echo "Failed to download $file. Retrying in 5 seconds..."
+            sleep 5
+        fi
+    done
+done
+
+# Install downloaded .deb files
+for file in $file_names; do
+    file_path="${cache_path}${file}"
+    echo "Installing $file..."
+    dpkg -i "$file_path"
+    if [ $? -ne 0 ]; then
+        echo "Failed to install $file. Please check the error message above."
+        exit 1
+    fi
+done
+
+tool_url="https://raw.githubusercontent.com/offici5l/MiUnlockTool/test/MiUnlockTool.py"
+destination_path="$PREFIX/bin/miunlock"
+
+echo "Downloading MiUnlockTool.py to $destination_path..."
+while true; do
+    curl -L "$tool_url" -o "$destination_path"
+    if [ $? -eq 0 ]; then
+        chmod +x "$destination_path"
+        break
+    else
+        echo "Failed to download MiUnlockTool.py. Retrying in 5 seconds..."
+        sleep 5
+    fi
+done
